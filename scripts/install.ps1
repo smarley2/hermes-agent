@@ -776,23 +776,24 @@ function Test-Node {
             $downloadUrl = "${indexUrl}${zipName}"
             $tmpZip = "$env:TEMP\$zipName"
             $tmpDir = "$env:TEMP\hermes-node-extract"
+            $nodeDir = "$HermesHome\node"
 
             Invoke-WebRequest -Uri $downloadUrl -OutFile $tmpZip -UseBasicParsing
             if (Test-Path $tmpDir) { Remove-Item -Recurse -Force $tmpDir }
+            if (Test-Path $nodeDir) { Remove-Item -Recurse -Force $nodeDir }
+            New-Item -ItemType Directory -Path $nodeDir -Force | Out-Null
             Expand-Archive -Path $tmpZip -DestinationPath $tmpDir -Force
 
             $extractedDir = Get-ChildItem $tmpDir -Directory | Select-Object -First 1
             if ($extractedDir) {
-                if (Test-Path "$HermesHome\node") { Remove-Item -Recurse -Force "$HermesHome\node" }
-                Move-Item $extractedDir.FullName "$HermesHome\node"
+                Move-Item -Path (Join-Path $extractedDir.FullName "*") -Destination $nodeDir -Force
 
                 # Session PATH so the rest of this run sees node/npm.
-                $env:Path = "$HermesHome\node;$env:Path"
+                $env:Path = "$nodeDir;$env:Path"
 
                 # Persist to User PATH so fresh shells (and future stages
                 # in cross-process driver mode) see it.  Matches the
                 # pattern Install-Git uses for PortableGit.
-                $nodeDir = "$HermesHome\node"
                 $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
                 $userPathItems = if ($userPath) { $userPath -split ";" } else { @() }
                 if ($userPathItems -notcontains $nodeDir) {
