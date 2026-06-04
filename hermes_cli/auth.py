@@ -44,7 +44,7 @@ from urllib.parse import parse_qs, urlencode, urlparse
 import httpx
 
 from hermes_cli.config import get_hermes_home, get_config_path, read_raw_config
-from hermes_constants import OPENROUTER_BASE_URL, secure_parent_dir
+from hermes_constants import CODEX_BACKEND_BASE_URL, OPENROUTER_BASE_URL, secure_parent_dir
 from agent.credential_persistence import sanitize_borrowed_credential_payload
 from utils import atomic_replace, atomic_yaml_write, is_truthy_value
 
@@ -77,7 +77,7 @@ NOUS_AUTH_PATH_INVOKE_JWT = "invoke_jwt"
 ACCESS_TOKEN_REFRESH_SKEW_SECONDS = 120       # refresh 2 min before expiry
 NOUS_INVOKE_JWT_MIN_TTL_SECONDS = ACCESS_TOKEN_REFRESH_SKEW_SECONDS
 DEVICE_AUTH_POLL_INTERVAL_CAP_SECONDS = 1     # poll at most every 1s
-DEFAULT_CODEX_BASE_URL = "https://chatgpt.com/backend-api/codex"
+DEFAULT_CODEX_BASE_URL = CODEX_BACKEND_BASE_URL
 DEFAULT_XAI_OAUTH_BASE_URL = "https://api.x.ai/v1"
 MINIMAX_OAUTH_CLIENT_ID = "78257093-7e40-4613-99e0-527b14b39113"
 MINIMAX_OAUTH_SCOPE = "group_id profile model.completion"

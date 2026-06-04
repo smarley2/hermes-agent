@@ -18,7 +18,7 @@ import yaml
 
 from utils import base_url_host_matches, base_url_hostname
 
-from hermes_constants import OPENROUTER_MODELS_URL
+from hermes_constants import CODEX_MODELS_URL, OPENROUTER_MODELS_URL
 
 logger = logging.getLogger(__name__)
 
@@ -1338,7 +1338,7 @@ def _fetch_codex_oauth_context_lengths(access_token: str) -> Dict[str, int]:
 
     try:
         resp = requests.get(
-            "https://chatgpt.com/backend-api/codex/models?client_version=1.0.0",
+            CODEX_MODELS_URL,
             headers={"Authorization": f"Bearer {access_token}"},
             timeout=10,
             verify=_resolve_requests_verify(),
