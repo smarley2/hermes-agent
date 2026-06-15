@@ -91,7 +91,15 @@ Manual foreground/background run (macOS or Linux without a service manager):
 disown
 ```
 
-Windows (PowerShell):
+Windows (PowerShell, no admin required):
+
+```powershell
+cd ~/.hermes/skills/software-development/cloakbrowser/scripts
+powershell -ExecutionPolicy Bypass -File .\install-cloakbrowser-windows.ps1
+powershell -ExecutionPolicy Bypass -File .\start-cloakbrowser-server-windows.ps1
+```
+
+Manual one-liner alternative:
 
 ```powershell
 python -c "from cloakbrowser.download import ensure_binary; import os, subprocess; b=ensure_binary(); subprocess.Popen([b, '--remote-debugging-port=9222', '--remote-debugging-address=127.0.0.1', '--user-data-dir='+os.path.expanduser('~/.cloakbrowser/profile'), '--headless=new', '--no-first-run', '--no-default-browser-check', '--disable-dev-shm-usage'])"
@@ -171,6 +179,8 @@ Other useful smoke targets:
 | `~/.local/bin/cloakserve-hermes` | Helper script that launches the binary with CDP |
 | `~/.config/systemd/user/cloakbrowser.service` | Optional systemd-user unit for auto-start (Linux) |
 | `~/Library/LaunchAgents/com.hermes.cloakbrowser.plist` | Optional launchd user service for auto-start (macOS) |
+| `scripts/install-cloakbrowser-windows.ps1` | No-admin Windows installer for the Python package and binary |
+| `scripts/start-cloakbrowser-server-windows.ps1` | No-admin Windows CDP server launcher |
 | `~/.hermes/config.yaml` (`browser.cdp_url`) | Tells Hermes where to attach |
 
 ## References
