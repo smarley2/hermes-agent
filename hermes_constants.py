@@ -11,6 +11,9 @@ from contextvars import ContextVar, Token
 from pathlib import Path
 
 
+CODEX_BACKEND_BASE_URL = "https://chatgpt.com/backend-api/codex"
+CODEX_MODELS_URL = f"{CODEX_BACKEND_BASE_URL}/models?client_version=1.0.0"
+
 _profile_fallback_warned: bool = False
 _UNSET = object()
 _HERMES_HOME_OVERRIDE: ContextVar[str | object] = ContextVar(

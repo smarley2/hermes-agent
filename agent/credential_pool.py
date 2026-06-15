@@ -13,7 +13,7 @@ from dataclasses import dataclass, fields, replace
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from hermes_constants import OPENROUTER_BASE_URL
+from hermes_constants import CODEX_BACKEND_BASE_URL, OPENROUTER_BASE_URL
 from hermes_cli.config import load_env
 from agent.credential_persistence import (
     is_borrowed_credential_source,
@@ -1902,7 +1902,7 @@ def _seed_from_singletons(provider: str, entries: List[PooledCredential]) -> Tup
                     "auth_type": AUTH_TYPE_OAUTH,
                     "access_token": tokens.get("access_token", ""),
                     "refresh_token": tokens.get("refresh_token"),
-                    "base_url": "https://chatgpt.com/backend-api/codex",
+                    "base_url": CODEX_BACKEND_BASE_URL,
                     "last_refresh": state.get("last_refresh"),
                     "label": custom_label or label_from_token(tokens.get("access_token", ""), "device_code"),
                 },

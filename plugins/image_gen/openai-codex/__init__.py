@@ -23,6 +23,7 @@ import json
 import logging
 from typing import Any, Dict, List, Optional, Tuple
 
+from hermes_constants import CODEX_BACKEND_BASE_URL
 from agent.image_gen_provider import (
     DEFAULT_ASPECT_RATIO,
     ImageGenProvider,
@@ -74,7 +75,7 @@ _SIZES = {
 # the host that calls the ``image_generation`` tool; the actual image work is
 # done by ``API_MODEL``.
 _CODEX_CHAT_MODEL = "gpt-5.5"
-_CODEX_BASE_URL = "https://chatgpt.com/backend-api/codex"
+_CODEX_BASE_URL = CODEX_BACKEND_BASE_URL
 _CODEX_INSTRUCTIONS = (
     "You are an assistant that must fulfill image generation requests by "
     "using the image_generation tool when provided."

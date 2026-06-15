@@ -101,11 +101,10 @@ OpenAI = _OpenAIProxy()  # module-level name, resolves lazily on call/isinstance
 
 from agent.credential_pool import load_pool
 from hermes_cli.config import get_hermes_home
-from hermes_constants import OPENROUTER_BASE_URL
+from hermes_constants import CODEX_BACKEND_BASE_URL, OPENROUTER_BASE_URL
 from utils import base_url_host_matches, base_url_hostname, model_forces_max_completion_tokens, normalize_proxy_env_vars
 
 logger = logging.getLogger(__name__)
-
 
 def _safe_isinstance(obj: Any, maybe_type: Any) -> bool:
     """Return False instead of raising when a patched symbol is not a type."""
@@ -497,7 +496,7 @@ _AUTH_JSON_PATH = get_hermes_home() / "auth.json"
 # → gpt-5.4 over 6 weeks in early 2026).  Callers must pass the model
 # they want explicitly (from config.yaml model.model, auxiliary.<task>.model,
 # or the user's active Codex model selection).
-_CODEX_AUX_BASE_URL = "https://chatgpt.com/backend-api/codex"
+_CODEX_AUX_BASE_URL = CODEX_BACKEND_BASE_URL
 
 
 def _codex_cloudflare_headers(access_token: str) -> Dict[str, str]:

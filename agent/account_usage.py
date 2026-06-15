@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Optional
 import httpx
 
 from agent.anthropic_adapter import _is_oauth_token, resolve_anthropic_token
+from hermes_constants import CODEX_BACKEND_BASE_URL
 from hermes_cli.auth import _read_codex_tokens, resolve_codex_runtime_credentials
 from hermes_cli.runtime_provider import resolve_runtime_provider
 
@@ -428,7 +429,7 @@ def build_credits_view(*, markdown: bool = False, timeout: float = 10.0) -> Cred
 def _resolve_codex_usage_url(base_url: str) -> str:
     normalized = (base_url or "").strip().rstrip("/")
     if not normalized:
-        normalized = "https://chatgpt.com/backend-api/codex"
+        normalized = CODEX_BACKEND_BASE_URL
     if normalized.endswith("/codex"):
         normalized = normalized[: -len("/codex")]
     if "/backend-api" in normalized:

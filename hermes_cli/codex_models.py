@@ -9,6 +9,8 @@ from typing import List, Optional
 
 import os
 
+from hermes_constants import CODEX_MODELS_URL
+
 logger = logging.getLogger(__name__)
 
 DEFAULT_CODEX_MODELS: List[str] = [
@@ -84,7 +86,7 @@ def _fetch_models_from_api(access_token: str) -> List[str]:
     try:
         import httpx
         resp = httpx.get(
-            "https://chatgpt.com/backend-api/codex/models?client_version=1.0.0",
+            CODEX_MODELS_URL,
             headers={"Authorization": f"Bearer {access_token}"},
             timeout=10,
         )
