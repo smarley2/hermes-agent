@@ -15,6 +15,8 @@
 #   - headless=new (override with --headless=false or --headed)
 #
 # Environment overrides:
+#   CLOAKBROWSER_BINARY_PATH explicit Chromium/CloakBrowser executable path
+#   CLOAK_PYTHON      Python interpreter used to query cloakbrowser (default: python3)
 #   CLOAK_BIN_DIR     base dir holding chromium-* releases (default: ~/.cloakbrowser)
 #   CLOAK_PROFILE_DIR profile dir (default: $CLOAK_BIN_DIR/profile)
 #   CLOAK_PORT        CDP port (default: 9222)
@@ -26,11 +28,54 @@ BIN_DIR="${CLOAK_BIN_DIR:-$HOME/.cloakbrowser}"
 PROFILE_DIR="${CLOAK_PROFILE_DIR:-$BIN_DIR/profile}"
 PORT="${CLOAK_PORT:-9222}"
 ADDR="${CLOAK_ADDR:-127.0.0.1}"
+PYTHON_BIN="${CLOAK_PYTHON:-python3}"
 
-CHROME_BIN=$(ls -td "$BIN_DIR"/chromium-*/chrome 2>/dev/null | head -n1 || true)
+resolve_chrome_bin() {
+  if [[ -n "${CLOAKBROWSER_BINARY_PATH:-}" && -x "${CLOAKBROWSER_BINARY_PATH}" ]]; then
+    printf '%s\n' "${CLOAKBROWSER_BINARY_PATH}"
+    return 0
+  fi
+
+  # Preferred path: ask the installed cloakbrowser package. This handles
+  # Linux (chrome), Windows (chrome.exe), and macOS app bundles
+  # (Chromium.app/Contents/MacOS/Chromium), and also triggers the package's
+  # normal binary-location fallback logic.
+  if command -v "$PYTHON_BIN" >/dev/null 2>&1; then
+    local from_python
+    from_python=$("$PYTHON_BIN" - <<'PY' 2>/dev/null || true
+try:
+    from cloakbrowser.download import ensure_binary
+    print(ensure_binary())
+except Exception:
+    pass
+PY
+)
+    if [[ -n "$from_python" && -x "$from_python" ]]; then
+      printf '%s\n' "$from_python"
+      return 0
+    fi
+  fi
+
+  # Fallback for older/manual installs. Keep macOS bundle support explicit;
+  # the original PR only looked for chromium-*/chrome, which misses darwin.
+  local candidate
+  for candidate in \
+    "$BIN_DIR"/chromium-*/chrome \
+    "$BIN_DIR"/chromium-*/chrome.exe \
+    "$BIN_DIR"/chromium-*/Chromium.app/Contents/MacOS/Chromium; do
+    if [[ -x "$candidate" ]]; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
+CHROME_BIN=$(resolve_chrome_bin || true)
 if [[ -z "$CHROME_BIN" ]]; then
   echo "cloakserve-hermes: CloakBrowser binary not found under $BIN_DIR." >&2
-  echo "cloakserve-hermes: install with: python -m cloakbrowser install" >&2
+  echo "cloakserve-hermes: install with: python -m pip install cloakbrowser && python -m cloakbrowser install" >&2
+  echo "cloakserve-hermes: or set CLOAKBROWSER_BINARY_PATH to a local Chromium binary." >&2
   exit 1
 fi
 

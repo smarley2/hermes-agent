@@ -1,8 +1,8 @@
 ---
 name: cloakbrowser
 description: Route Hermes browser tools through CloakBrowser, a stealth Chromium with C++ source-level fingerprint patches. Use when browser_navigate or browser_snapshot are getting captcha-walled, blocked by Cloudflare/Turnstile, or served bot-detection pages instead of real content.
-version: 1.0.0
-author: Shashwat Gokhe
+version: 1.1.0
+author: Shashwat Gokhe + Hermes Agent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
@@ -53,30 +53,48 @@ Either way, the only thing Hermes needs is a reachable CDP endpoint on `127.0.0.
 
 ## Run as a long-lived CDP endpoint
 
-A helper script and a systemd-user unit are shipped with this skill under `scripts/`. They auto-detect the newest installed Chromium build under `~/.cloakbrowser/chromium-*` and expose CDP on `127.0.0.1:9222` with a persistent profile.
+A helper script plus Linux systemd and macOS launchd units are shipped with this skill under `scripts/`. The helper asks the installed `cloakbrowser` Python package for the correct binary path, so it works on Linux (`chrome`), Windows (`chrome.exe`), and macOS (`Chromium.app/Contents/MacOS/Chromium`). It exposes CDP on `127.0.0.1:9222` with a persistent profile.
+
+First install the helper script:
+
+```bash
+SKILL_DIR=~/.hermes/skills/software-development/cloakbrowser
+mkdir -p ~/.local/bin
+install -m 0755 "$SKILL_DIR/scripts/cloakserve-hermes.sh" ~/.local/bin/cloakserve-hermes
+```
+
+macOS (launchd user service):
+
+```bash
+SKILL_DIR=~/.hermes/skills/software-development/cloakbrowser
+mkdir -p ~/Library/LaunchAgents ~/Library/Logs
+sed "s#__HOME__#$HOME#g" "$SKILL_DIR/scripts/com.hermes.cloakbrowser.plist"   > ~/Library/LaunchAgents/com.hermes.cloakbrowser.plist
+launchctl unload ~/Library/LaunchAgents/com.hermes.cloakbrowser.plist 2>/dev/null || true
+launchctl load ~/Library/LaunchAgents/com.hermes.cloakbrowser.plist
+launchctl start com.hermes.cloakbrowser
+```
 
 Linux (systemd-user):
 
 ```bash
 SKILL_DIR=~/.hermes/skills/software-development/cloakbrowser
-install -m 0755 "$SKILL_DIR/scripts/cloakserve-hermes.sh" ~/.local/bin/cloakserve-hermes
 mkdir -p ~/.config/systemd/user
 install -m 0644 "$SKILL_DIR/scripts/cloakbrowser.service" ~/.config/systemd/user/cloakbrowser.service
 systemctl --user daemon-reload
 systemctl --user enable --now cloakbrowser.service
 ```
 
-macOS or Linux without systemd:
+Manual foreground/background run (macOS or Linux without a service manager):
 
 ```bash
-~/.hermes/skills/software-development/cloakbrowser/scripts/cloakserve-hermes.sh &
+~/.local/bin/cloakserve-hermes &
 disown
 ```
 
 Windows (PowerShell):
 
 ```powershell
-python -c "import cloakbrowser, glob, os, subprocess; b=sorted(glob.glob(os.path.expanduser('~/.cloakbrowser/chromium-*/chrome*')))[-1]; subprocess.Popen([b, '--remote-debugging-port=9222', '--remote-debugging-address=127.0.0.1', '--user-data-dir='+os.path.expanduser('~/.cloakbrowser/profile'), '--headless=new', '--no-first-run', '--no-default-browser-check', '--disable-dev-shm-usage'])"
+python -c "from cloakbrowser.download import ensure_binary; import os, subprocess; b=ensure_binary(); subprocess.Popen([b, '--remote-debugging-port=9222', '--remote-debugging-address=127.0.0.1', '--user-data-dir='+os.path.expanduser('~/.cloakbrowser/profile'), '--headless=new', '--no-first-run', '--no-default-browser-check', '--disable-dev-shm-usage'])"
 ```
 
 Verify the endpoint is up:
@@ -85,7 +103,7 @@ Verify the endpoint is up:
 curl -s http://127.0.0.1:9222/json/version
 ```
 
-The response should advertise `Chrome/146.x.x.x` (no `HeadlessChrome` in the UA).
+The response should advertise a CloakBrowser/Chromium build. On current macOS releases the binary may be Chromium 145 while Linux/Windows may be 146+; use `python -m cloakbrowser info` as the source of truth.
 
 ## Wire Hermes to it
 
@@ -152,6 +170,7 @@ Other useful smoke targets:
 | `~/.cloakbrowser/profile/` | Persistent browser profile (cookies, localStorage) |
 | `~/.local/bin/cloakserve-hermes` | Helper script that launches the binary with CDP |
 | `~/.config/systemd/user/cloakbrowser.service` | Optional systemd-user unit for auto-start (Linux) |
+| `~/Library/LaunchAgents/com.hermes.cloakbrowser.plist` | Optional launchd user service for auto-start (macOS) |
 | `~/.hermes/config.yaml` (`browser.cdp_url`) | Tells Hermes where to attach |
 
 ## References
